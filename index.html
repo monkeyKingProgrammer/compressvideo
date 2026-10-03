@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MP4 Compressor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+  <style>
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .checker { background-image: linear-gradient(45deg,#eef2f7 25%,transparent 25%),linear-gradient(-45deg,#eef2f7 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#eef2f7 75%),linear-gradient(-45deg,transparent 75%,#eef2f7 75%); background-size: 20px 20px; background-position: 0 0,0 10px,10px -10px,-10px 0; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-800">
+  <main class="mx-auto max-w-5xl px-4 py-8 sm:py-12">
+    <header class="mb-8 text-center">
+      <p class="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-blue-600">Local video tool</p>
+      <h1 class="text-4xl font-bold tracking-tight text-slate-950">MP4 Compressor</h1>
+      <p class="mx-auto mt-3 max-w-xl text-slate-500">Reduce video file size in your browser. Your video stays on this device.</p>
+    </header>
+    <section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
+      <div class="grid gap-0 lg:grid-cols-[1.05fr_.95fr]">
+        <div class="border-b border-slate-200 p-6 lg:border-b-0 lg:border-r sm:p-8">
+          <div id="drop-zone" class="flex min-h-[330px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center transition hover:border-blue-400 hover:bg-blue-50/40">
+            <div class="mb-5 rounded-2xl bg-blue-100 p-4 text-blue-600"><svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0L8 8m4-4 4 4M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3"/></svg></div>
+            <h2 class="text-lg font-semibold text-slate-900">Drop an MP4 here</h2><p class="mt-2 text-sm text-slate-500">or click to choose a video file</p><p class="mt-5 text-xs text-slate-400">Processing happens locally in your browser</p>
+            <input id="file-input" class="hidden" type="file" accept="video/mp4,video/*">
+          </div>
+          <div id="video-info" class="mt-4 hidden rounded-xl bg-slate-50 p-4 text-sm"></div>
+          <video id="video-preview" class="checker mt-4 hidden max-h-64 w-full rounded-xl object-contain" controls></video>
+        </div>
+        <div class="flex flex-col p-6 sm:p-8">
+          <div class="mb-6 flex items-center justify-between"><h2 class="text-xl font-semibold text-slate-950">Compression options</h2><span id="engine-status" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">Engine not loaded</span></div>
+          <div class="space-y-5">
+            <label class="block"><span class="mb-2 block text-sm font-medium">Quality</span><select id="quality" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"><option value="28">Smaller file (lower quality)</option><option value="24" selected>Balanced</option><option value="20">Higher quality (larger file)</option></select></label>
+            <label class="block"><span class="mb-2 block text-sm font-medium">Maximum resolution</span><select id="resolution" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"><option value="original" selected>Keep original</option><option value="2160">4K / 2160p</option><option value="1080">Full HD / 1080p</option><option value="720">HD / 720p</option><option value="480">480p</option></select></label>
+            <div class="grid gap-4 sm:grid-cols-2"><label class="block"><span class="mb-2 block text-sm font-medium">Frame rate</span><select id="fps" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"><option value="original" selected>Keep original</option><option value="60">60 fps</option><option value="30">30 fps</option><option value="24">24 fps</option></select></label><label class="block"><span class="mb-2 block text-sm font-medium">Audio bitrate</span><select id="audio" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"><option value="128k" selected>128 kbps</option><option value="96k">96 kbps</option><option value="64k">64 kbps</option><option value="0">Remove audio</option></select></label></div>
+            <label class="block"><span class="mb-2 block text-sm font-medium">Encoding speed</span><select id="preset" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"><option value="veryfast">Fast</option><option value="medium" selected>Balanced</option><option value="slow">Smaller file</option></select></label>
+          </div>
+          <div class="mt-8"><div class="mb-2 flex justify-between text-xs text-slate-500"><span id="progress-label">Ready</span><span id="progress-percent">0%</span></div><div class="h-2 overflow-hidden rounded-full bg-slate-100"><div id="progress-bar" class="h-full w-0 rounded-full bg-blue-600 transition-all"></div></div></div>
+          <button id="compress" disabled class="mt-6 w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none">Choose a video first</button>
+          <div id="result" class="mt-5 hidden rounded-2xl border border-emerald-200 bg-emerald-50 p-4"></div><p id="message" class="mt-4 min-h-5 text-center text-sm text-slate-500"></p>
+        </div>
+      </div>
+    </section>
+    <p class="mt-5 text-center text-xs text-slate-400">Large videos may take several minutes and require extra memory.</p>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
