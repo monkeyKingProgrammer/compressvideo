@@ -28,10 +28,10 @@ The first compression loads the FFmpeg.wasm engine from the pinned CDN packages.
 
 ## Run locally
 
-From this folder, run:
+From this folder, run the included isolated development server:
 
 ```powershell
-python -m http.server 8000
+python server.py
 ```
 
 Then open <http://127.0.0.1:8000/>.

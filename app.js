@@ -30,7 +30,7 @@ const loadEngine = async () => {
   if (enginePromise) return enginePromise;
   enginePromise = (async () => {
     status.textContent = 'Loading engine…'; status.className = 'rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700';
-    ffmpeg = createFFmpeg({ log: false, corePath: 'https://unpkg.com/@ffmpeg/core@0.11.6/dist/ffmpeg-core.js', progress: ({ ratio }) => setProgress(ratio * 100, 'Compressing…') });
+    ffmpeg = createFFmpeg({ log: false, corePath: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js', progress: ({ ratio }) => setProgress(ratio * 100, 'Compressing…') });
     await ffmpeg.load(); status.textContent = 'Engine ready'; status.className = 'rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700'; return ffmpeg;
   })().catch((error) => { enginePromise = null; status.textContent = 'Engine failed'; status.className = 'rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700'; throw error; });
   return enginePromise;
